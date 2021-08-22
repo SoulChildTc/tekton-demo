@@ -1,4 +1,4 @@
-FROM gcr.io/google-appengine/python
+FROM registry.cn-shanghai.aliyuncs.com/soulchild/google-appengine-python
 
 RUN virtualenv /env
 
