@@ -8,7 +8,7 @@ ENV PORT 8080
 
 COPY app /cache/app
 
-RUN pip install -r /cache/app/requirements.txt
+RUN pip install -r /cache/app/requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple --trusted-host pypi.tuna.tsinghua.edu.cn
 
 WORKDIR /cache/app
 CMD gunicorn -b :$PORT main:app
