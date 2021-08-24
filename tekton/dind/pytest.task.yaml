@@ -1,0 +1,36 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: py-test
+spec:
+  params:
+  - name: directory
+    description: 代码的相对路径,作为工作目录使用
+    default: ""
+  resources:
+    inputs:
+    - name: code
+      type: git
+  steps:
+  - name: pytest
+    image: python:3.8.11-alpine
+    workingDir: /workspace/$(resources.inputs.code.name)/$(params.directory)
+    resources:
+      requests:
+        memory: 150Mi
+      limits:
+        memory: 150Mi
+    script: |
+      #!/usr/bin/env sh
+      pip3 download -i https://pypi.tuna.tsinghua.edu.cn/simple -r requirements.txt -d "$(workspaces.pipcache.path)" || exit 1;
+      pip3 download -i https://pypi.tuna.tsinghua.edu.cn/simple -r dev_requirements.txt -d "$(workspaces.pipcache.path)" || exit 1;
+      pip3 install -r requirements.txt -f "file:///$(workspaces.pipcache.path)" || exit 1;
+      pip3 install -r dev_requirements.txt -f "file:///$(workspaces.pipcache.path)" || exit 1;
+      echo "$ export PYTEST_ENV=pytest"
+      export PYTEST_ENV=pytest
+      echo "$ export PYTHONPATH=/workspace/$(resources.inputs.code.name)"
+      export PYTHONPATH=/workspace/$(resources.inputs.code.name)
+      pytest .
+  workspaces:
+  - name: code
+  - name: pipcache
