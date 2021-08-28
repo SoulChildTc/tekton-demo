@@ -1,0 +1,27 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: mvn
+  namespace: java-demo
+spec:
+  resources:
+    inputs:
+    - name: code
+      type: git
+  workspaces:
+  - name: code
+  - name: mvn-settings
+  - name: m2
+  params:
+  - name: mvn_opt
+  steps:
+  - name: mvn
+    image: maven:3.8-jdk-8
+    workingDir: $(workspaces.code.path)
+    command:
+    - /usr/bin/mvn
+    args:
+    - $(params.mvn_opt)
+    - -Dmaven.repo.local=$(workspaces.m2.path)/.m2/repository 
+    - -s
+    - $(workspaces.mvn-settings.path)/settings.xml 

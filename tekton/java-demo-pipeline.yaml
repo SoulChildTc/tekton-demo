@@ -1,0 +1,50 @@
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: java-demo-pipeline
+  namespace: java-demo
+spec:
+  resources:
+  - name: code
+    type: git
+  workspaces:
+  - name: code
+  - name: mvn-settings
+  - name: m2
+  - name: dockerconfig
+    optional: true
+  params:
+  - name: mvn_opt
+  - name: image
+  tasks:
+  - name: mvn
+    taskRef:
+      name: mvn
+    params:
+    - name: mvn_opt
+      value: $(params.mvn_opt)
+    resources:
+      inputs:
+      - name: code
+        resource: code
+    workspaces:
+    - name: code
+      workspace: code
+    - name: mvn-settings
+      workspace: mvn-settings
+    - name: m2
+      workspace: m2
+  - name: kaniko-build-push
+    taskRef:
+      name: kaniko-build-push
+    runAfter:
+    - mvn
+    workspaces:
+    - name: code
+      workspace: code
+    - name: dockerconfig
+      workspace: dockerconfig
+    params:
+    - name: IMAGE
+      value: $(params.image)
+    

@@ -1,0 +1,37 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: kaniko-build-push
+  namespace: java-demo
+spec:
+  params:
+  - name: IMAGE
+    description: Name (reference) of the image to build.
+  - name: DOCKERFILE
+    description: Path to the Dockerfile to build.
+    default: ./Dockerfile
+  - name: CONTEXT
+    description: The build context used by Kaniko.
+    default: ./
+  - name: EXTRA_ARGS
+    default: ""
+  - name: BUILDER_IMAGE
+    description: The image on which builds will run (default is v1.5.1)
+    default: registry.cn-shanghai.aliyuncs.com/soulchild/kaniko-project-executor:v1.5.1
+  workspaces:
+  - name: code
+    description: Holds the context and docker file
+  - name: dockerconfig
+    optional: true
+    mountPath: /kaniko/.docker
+  steps:
+  - name: build-and-push
+    workingDir: $(workspaces.code.path)
+    image: $(params.BUILDER_IMAGE)
+    args:
+    - $(params.EXTRA_ARGS)
+    - --dockerfile=$(params.DOCKERFILE)
+    - --context=$(params.CONTEXT)
+    - --destination=$(params.IMAGE)
+    securityContext:
+      runAsUser: 0

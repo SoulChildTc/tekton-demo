@@ -1,0 +1,36 @@
+apiVersion: tekton.dev/v1beta1
+kind: PipelineRun
+metadata:
+  generateName: java-demo-ci-
+  namespace: java-demo
+spec:
+  resources:
+  - name: code
+    resourceRef:
+      name: java-demo
+  workspaces:
+  - name: code
+    volumeClaimTemplate:
+      spec:
+        accessModes: 
+        - ReadWriteOnce
+        resources:
+          requests:
+            storage: 1Gi
+  - name: dockerconfig
+    secret:
+      secretName: aliyun-cr
+  - name: mvn-settings
+    configmap:
+      name: mvn-settings
+  - name: m2
+    PersistentVolumeClaim:
+      claimName: tekton
+    subPath: tekton/.m2
+  params:
+  - name: mvn_opt
+    value: "package"
+  - name: image
+    value: registry.cn-shanghai.aliyuncs.com/soulchild/zero:java-demo-v1
+  pipelineRef:
+    name: java-demo-pipeline

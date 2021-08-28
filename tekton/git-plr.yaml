@@ -1,0 +1,12 @@
+apiVersion: tekton.dev/v1alpha1
+kind: PipelineResource
+metadata:
+  name: java-demo
+  namespace: java-demo
+spec:
+  type: git
+  params:
+  - name: url
+    value: https://github.com.cnpmjs.org/soulchildwm/tekton-demo.git
+  - name: revision
+    value: java-demo
