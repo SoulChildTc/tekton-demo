@@ -1,0 +1,183 @@
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: node-pipeline
+  namespace: tekton-pipelines
+spec:
+  description: |
+    cat-branch-readme takes a git repository and a branch name and
+    prints the README.md file from that branch. This is an example
+    Pipeline demonstrating the following:
+      - Using the git-clone catalog Task to clone a branch
+      - Passing a cloned repo to subsequent Tasks using a Workspace.
+      - Ordering Tasks in a Pipeline using "runAfter" so that
+        git-clone completes before we try to read from the Workspace.
+      - Using a volumeClaimTemplate Volume as a Workspace.
+      - Avoiding hard-coded paths by using a Workspace's path
+        variable instead.
+  params:
+  - name: url
+    type: string
+    description: The git repository URL to clone from.
+  - name: revision
+    type: string
+    description: The git branch to clone.
+  - name: image
+    type: string
+  - name: report-subpath
+    type: string
+  - name: project
+    type: string
+  - name: commitcontent
+    type: string
+  workspaces:
+  - name: shared-data
+    description: |
+      This workspace will receive the cloned git repo and be passed
+      to the next Task for the repo's README.md file to be read.
+  - name: npm-cache
+  - name: dockerconfig
+  - name: nginxdir
+  tasks:
+  - name: fetch-repo
+    taskRef:
+      name: git-clone
+    workspaces:
+    - name: output
+      workspace: shared-data
+    params:
+    - name: url
+      value: $(params.url)
+    - name: revision
+      value: $(params.revision)
+    - name: depth
+      value: "1"
+    - name: sslVerify
+      value: "false"
+  - name: npm-install
+    runAfter: ["fetch-repo"]
+    workspaces:
+    - name: source
+      workspace: shared-data
+    - name: cache
+      workspace: npm-cache
+    taskRef:
+      name: npm
+    params:
+    - name: ARGS
+      value:
+      - install
+      - --registry=https://registry.npm.taobao.org
+  - name: npm-lint
+    runAfter: ["npm-install"]
+    workspaces:
+    - name: source
+      workspace: shared-data
+    - name: cache
+      workspace: npm-cache
+    taskRef:
+      name: npm
+    params:
+    - name: ARGS
+      value:
+      - run
+      - lint
+  - name: sonar-scanner
+    runAfter: ["npm-lint"]  # Wait until the clone is done before reading the readme.
+    workspaces:
+    - name: source
+      workspace: shared-data
+    taskRef:
+      name: sonarqube-scanner
+  - name: npm-build
+    runAfter: ["npm-lint"]
+    workspaces:
+    - name: source
+      workspace: shared-data
+    - name: cache
+      workspace: npm-cache
+    taskRef:
+      name: npm
+    params:
+    - name: ARGS
+      value:
+      - run
+      - build
+  - name: collect-report
+    runAfter: ["npm-lint"]
+    workspaces:
+    - name: reportdir
+      workspace: shared-data
+    - name: nginxdir
+      workspace: nginxdir
+    taskRef:
+      name: collect-report
+    params:
+    - name: SUBPATH
+      value: $(params.report-subpath)
+    - name: PROJECT
+      value: $(params.project)
+  - name: generate-build-id
+    taskRef:
+      name: generate-build-id
+  - name: kaniko-build
+    taskRef:
+      name: kaniko
+    runAfter: ["npm-build", "sonar-scanner"]
+    workspaces:
+    - name: source
+      workspace: shared-data
+    - name: dockerconfig
+      workspace: dockerconfig
+    - name: dependence
+      workspace: npm-cache
+    params:
+    - name: IMAGE
+      value: $(params.image):$(tasks.generate-build-id.results.build-id)
+  - name: build-k8syaml-test
+    runAfter:
+    - kaniko-build
+    taskRef: 
+      name: set-iaas-repo
+    params:
+    - name: template_name
+      value: node-standard.yml
+    - name: image
+      value: $(params.image):$(tasks.generate-build-id.results.build-id)
+    - name: projectname
+      value: $(params.project)
+    - name: runenv
+      value: test
+    - name: commitcontent
+      value: $(params.commitcontent)
+  - name: argocd-deploy-test
+    runAfter: 
+    - build-k8syaml-test
+    taskRef: 
+      name: argocd-task-sync-and-wait
+    params:
+    - name: application-name
+      value: "$(params.project)-test"
+  - name: build-k8syaml-prod
+    runAfter:
+    - argocd-deploy-test
+    taskRef: 
+      name: set-iaas-repo
+    params:
+    - name: template_name
+      value: node-standard.yml
+    - name: image
+      value: $(params.image):$(tasks.generate-build-id.results.build-id)
+    - name: projectname
+      value: $(params.project)
+    - name: runenv
+      value: prod
+    - name: commitcontent
+      value: $(params.commitcontent)
+  finally:
+  - name: notification
+    taskRef:
+      Name: notification
+    params:
+      - name: content
+        value: "【Tekton - $(params.project)】\\n线下pipeline执行完成\\n测试报告: http://reports.devops.soulchild.cn/$(params.project)"

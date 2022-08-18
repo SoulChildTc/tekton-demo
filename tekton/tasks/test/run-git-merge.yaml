@@ -1,0 +1,12 @@
+apiVersion: tekton.dev/v1beta1
+kind: TaskRun
+metadata:
+  name: git-merge-test
+  namespace: tekton-pipelines
+spec:
+  serviceAccountName: tekton-auth
+  taskRef:
+    name: git-merge
+  params:
+  - name: projectname
+    value: python-devops

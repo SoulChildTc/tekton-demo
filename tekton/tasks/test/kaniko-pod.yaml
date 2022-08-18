@@ -1,0 +1,37 @@
+# Test kaniko upload container image
+apiVersion: v1
+kind: Pod
+metadata:
+  name: kaniko
+  namespace: tekton-pipelines
+spec:
+  serviceAccountName: tekton-auth
+  initContainers:
+  - name: init
+    image: busybox
+    command: ["/bin/sh", "-c"]
+    args: ["echo FROM nginx:1.14.2 > /workspace/dockerfile"]
+    volumeMounts:
+      - name: dockerfile-storage
+        mountPath: /workspace
+  containers:
+  - name: kaniko
+    image: harbor.devops.soulchild.cn/devops/executor:v1.5.1
+    args: ["--dockerfile=/workspace/dockerfile",
+            "--context=dir://workspace",
+            "--destination=harbor.devops.soulchild.cn/devops/kaniko-test:v1"] # replace with your dockerhub account
+    volumeMounts:
+      - name: kaniko-secret
+        mountPath: /kaniko/.docker
+      - name: dockerfile-storage
+        mountPath: /workspace
+  restartPolicy: Never
+  volumes:
+    - name: kaniko-secret
+      secret:
+        secretName: harbor-auth
+        items:
+          - key: .dockerconfigjson
+            path: config.json
+    - name: dockerfile-storage
+      emptyDir: {}

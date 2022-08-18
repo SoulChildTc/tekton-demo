@@ -1,0 +1,28 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: coverage
+  namespace: tekton-pipelines
+  labels:
+    app.kubernetes.io/version: "0.1"
+spec:
+  workspaces:
+    - name: source
+    - name: pipcache
+      mountPath: /pipcache
+  params:
+    - name: IMAGE
+      type: string
+      default: harbor.devops.soulchild.cn/devops/python:ci
+  steps:
+    - name: coverage
+      image: $(params.IMAGE)
+      script: |
+        #!/bin/bash
+        mkdir reports -p
+        pip3 --cache-dir=$(workspaces.pipcache.path) install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
+        export PYTHONPATH=$(workspaces.source.path)
+        coverage run -m pytest src/tests.py
+        coverage xml -o reports/coverage.xml
+        coverage html -d reports/coverage
+      workingDir: $(workspaces.source.path)/

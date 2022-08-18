@@ -1,0 +1,25 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: allure-generate
+  namespace: tekton-pipelines
+  labels:
+    app.kubernetes.io/version: "0.1"
+spec:
+  workspaces:
+    - name: source
+  params:
+    - name: IMAGE
+      type: string
+      default: harbor.devops.soulchild.cn/devops/allure
+    - name: reportdir
+      default: "./reports"
+  steps:
+    - name: allure-generate
+      image: $(params.IMAGE)
+      script: |
+        #!/bin/bash
+        export JAVA_HOME=/jdk-17.0.2/
+        mkdir -p $(params.reportdir)
+        /allure-2.17.3/bin/allure generate $(params.reportdir)/allure-reports -o $(params.reportdir)/allure-report --clean
+      workingDir: $(workspaces.source.path)/

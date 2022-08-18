@@ -1,0 +1,13 @@
+apiVersion: triggers.tekton.dev/v1alpha1
+kind: EventListener
+metadata:
+  name: cd-pipeline
+  namespace: tekton-pipelines
+spec:
+  serviceAccountName: tekton-triggers-devops
+  triggers:
+  - name: node
+    bindings:
+      - ref: cd-binding
+    template:
+      ref: cd-template

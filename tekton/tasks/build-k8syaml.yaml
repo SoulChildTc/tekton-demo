@@ -1,0 +1,84 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: gitlab-auth
+  namespace: tekton-pipelines
+stringData:
+  username: root
+  password: Devops123
+---
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: set-iaas-repo
+  namespace: tekton-pipelines
+spec:
+  results:
+  - name: ispush
+  params:
+    - name: git_template_url
+      default: gitlab.devops.soulchild.cn/root/k8s-template.git
+    - name: template_name
+      description: template file name
+    - name: git_iaas_url
+      default: gitlab.devops.soulchild.cn/root/devops-iaas.git
+    - name: gitemail
+      default: lcbot@soulchild.cn
+    - name: gitname
+      default: tektonci
+    - name: tool-image
+      default: bitnami/git:2.35.1
+      description: task run image
+    - name: image
+      description: deploy yaml image
+    - name: projectname
+    - name: runenv
+    - name: commitcontent
+      default: "update $(params.projectname)"
+  steps:
+    - name: push-to-iaas
+      image: $(params.tool-image)
+      env:
+        - name: GIT_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: gitlab-auth
+              key: username
+              optional: true
+        - name: GIT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: gitlab-auth
+              key: password
+              optional: true
+      script: |-
+        #!/bin/bash
+        git config --global user.email "$(params.gitemail)"
+        git config --global user.name "$(params.gitname)"
+        git clone --branch master --depth 1 http://${GIT_USERNAME}:${GIT_PASSWORD}@$(params.git_template_url) template
+        git clone --branch master http://${GIT_USERNAME}:${GIT_PASSWORD}@$(params.git_iaas_url) iaas
+        cd iaas/
+        if [[ $(params.runenv) == prod ]];
+        then
+            echo "线上版本切换到iass仓库临时分支"
+            git checkout -b $(params.projectname)
+            #git pull origin $(git rev-parse --abbrev-ref HEAD)
+            # 生成模板
+            sed "s#{project-name}#$(params.projectname)#;s#{image}#$(params.image)-prod#;s#{runenv}#$(params.runenv)#" ../template/$(params.template_name)  > $(params.runenv)/$(params.projectname)/deploy.yaml
+        else
+            # 生成模板
+            sed "s#{project-name}#$(params.projectname)#;s#{image}#$(params.image)#;s#{runenv}#$(params.runenv)#" ../template/$(params.template_name)  > $(params.runenv)/$(params.projectname)/deploy.yaml
+        fi
+
+        git status
+        # 提交变更
+        if git status |grep 'nothing to commit, working tree clean' &>/dev/null
+        then 
+          echo "nothing to commit, working tree clean"
+          echo no | tr -d "\n" | tee $(results.ispush.path)
+        else
+          git add .
+          git commit -m "$(params.projectname) - $(params.commitcontent)"
+          git push origin $(git rev-parse --abbrev-ref HEAD)
+          echo yes | tr -d "\n" | tee $(results.ispush.path)
+        fi

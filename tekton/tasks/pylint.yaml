@@ -1,0 +1,23 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: pylint
+  namespace: tekton-pipelines
+  labels:
+    app.kubernetes.io/version: "0.1"
+spec:
+  workspaces:
+    - name: source
+  params:
+    - name: IMAGE
+      type: string
+      default: harbor.devops.soulchild.cn/devops/python:ci
+  steps:
+    - name: pylint
+      image: $(params.IMAGE)
+      script: |
+        #!/bin/bash
+        mkdir -p reports
+        pylint src/ --exit-zero --reports=y > reports/pylint-report.txt
+        pylint src/  --exit-zero --output-format=json | pylint-json2html -o reports/pylint.html
+      workingDir: $(workspaces.source.path)/

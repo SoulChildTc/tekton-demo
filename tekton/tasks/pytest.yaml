@@ -1,0 +1,36 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: pytest
+  namespace: tekton-pipelines
+  labels:
+    app.kubernetes.io/version: "0.1"
+spec:
+  workspaces:
+    - name: source
+    - name: pipcache
+      mountPath: /pipcache
+  params:
+    - name: reportdir
+      default: "./reports"
+  steps:
+    - name: pytest
+      image: harbor.devops.soulchild.cn/devops/python:ci
+      script: |
+        #!/bin/bash
+        mkdir reports -p
+        pip3 --cache-dir=$(workspaces.pipcache.path) install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
+        #pip3 download -i https://pypi.tuna.tsinghua.edu.cn/simple -r requirements.txt -d "$(workspaces.pipcache.path)" || exit 1;
+        #pip3 install -r requirements.txt -f "file:///$(workspaces.pipcache.path)" || exit 1;
+        echo "$ export PYTHONPATH=$(workspaces.source.path)"
+        export PYTHONPATH=$(workspaces.source.path)
+        pytest src/tests.py --alluredir=./reports/allure-reports
+      workingDir: $(workspaces.source.path)/
+    - name: allure-generate
+      image: harbor.devops.soulchild.cn/devops/allure
+      script: |
+        #!/bin/bash
+        export JAVA_HOME=/jdk-17.0.2/
+        mkdir -p $(params.reportdir)
+        /allure-2.17.3/bin/allure generate $(params.reportdir)/allure-reports -o $(params.reportdir)/allure-report --clean
+      workingDir: $(workspaces.source.path)/

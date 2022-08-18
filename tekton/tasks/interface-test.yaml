@@ -1,0 +1,24 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: interface-test
+  namespace: tekton-pipelines
+  labels:
+    app.kubernetes.io/version: "0.1"
+spec:
+  workspaces:
+  - name: report-dir
+  params:
+  - name: projectname
+  results:
+  - name: test-result
+  steps:
+    - name: interface-test
+      image: ibmcom/curl:4.0.0
+      workingDir: $(workspaces.report-dir.path)
+      script: |
+        #!/bin/bash
+        mkdir reports -p
+        curl "http://yapi.devops.soulchild.cn:3000/api/open/run_auto_test?id=17&token=a96b0a5386ae06a78851c58887a382c5ce7bb41bfaa62ec2ef732da6b110343d&mode=html&email=false&download=false" > reports/interfaceTestReport.html
+        grep '全部验证通过' reports/interfaceTestReport.html || exit 1
+        echo yes | tr -d "\n" | tee $(results.test-result.path)

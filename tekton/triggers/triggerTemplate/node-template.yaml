@@ -1,0 +1,57 @@
+apiVersion: triggers.tekton.dev/v1alpha1
+kind: TriggerTemplate
+metadata:
+  name: node-template
+  namespace: tekton-pipelines
+spec:
+  params:
+  - name: gitrevision
+    default: master
+  - name: gitrepositoryurl
+  - name: projectname
+  - name: commitcontent
+  resourcetemplates:
+  - apiVersion: tekton.dev/v1beta1
+    kind: PipelineRun
+    metadata:
+      generateName: node-pipeline-run-
+    spec:
+      serviceAccountName: tekton-auth
+      pipelineRef:
+        name: node-pipeline
+      params:
+        - name: url
+          value: $(tt.params.gitrepositoryurl)
+        - name: revision
+          value: $(tt.params.gitrevision)
+        - name: image
+          value: harbor.devops.soulchild.cn/devops/$(tt.params.projectname)
+        - name: report-subpath
+          value: "./reports"
+        - name: project
+          value: $(tt.params.projectname)
+        - name: commitcontent
+          value: $(tt.params.commitcontent)
+      workspaces:
+      - name: npm-cache
+        persistentVolumeClaim:
+          claimName: reports-nginx
+        subPath: node_modules
+      - name: nginxdir
+        persistentVolumeClaim:
+          claimName: reports-nginx
+      - name: dockerconfig
+        secret:
+          secretName: harbor-auth
+          items:
+          - key: .dockerconfigjson
+            path: config.json
+      - name: shared-data
+        volumeClaimTemplate:
+          spec:
+            storageClassName: managed-nfs-storage
+            accessModes:
+            - ReadWriteOnce
+            resources:
+              requests:
+                storage: 1Gi

@@ -1,0 +1,9 @@
+apiVersion: triggers.tekton.dev/v1alpha1
+kind: TriggerBinding
+metadata:
+  name: cd-binding
+  namespace: tekton-pipelines
+spec:
+  params:
+  - name: projectname
+    value: $(header.Http-X-Projectname)
