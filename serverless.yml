@@ -6,14 +6,14 @@ stage: prod
 #组件参数
 inputs:
   name: flaskDemo
-  region: ap-shanghai
+  region: ap-guangzhou
   type: web
   memorySize: 512
   timeout: 600
   initTimeout: 65
   image: # 镜像配置
     imageType: personal
-    imageUrl: ccr.ccs.tencentyun.com/py-demo/py-demo:${env:IMAGE_TAG}
+    imageUrl: ccr.ccs.tencentyun.com/py-demo/py-demo:53
     command: python3
     args: main.py
 
