@@ -1,0 +1,19 @@
+#scf组件配置样例
+#全量配置参考https://github.com/serverless-components/tencent-scf/blob/master/docs/configure.md
+component: scf # (必填) 引用 component 的名称，当前用到的是 tencent-scf 组件
+name: flaskDemo # (必填) 创建的实例名称，请修改成您的实例名称
+stage: prod
+#组件参数
+inputs:
+  name: flaskDemo
+  region: ap-shanghai
+  type: web
+  memorySize: 512
+  timeout: 600
+  initTimeout: 65
+  image: # 镜像配置
+    imageType: personal
+    imageUrl: ccr.ccs.tencentyun.com/py-demo/py-demo:${env:IMAGE_TAG}
+    command: python3
+    args: main.py
+
