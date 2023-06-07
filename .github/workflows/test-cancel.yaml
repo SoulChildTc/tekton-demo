@@ -2,7 +2,13 @@ name: GitHub Actions Demo
 run-name: ${{ github.actor }} 正在测试 GitHub Actions 🚀
 on: [push]
 jobs:
-  Explore-GitHub-Actions:
+  job1:
     runs-on: ubuntu-latest
     steps:
       - run: "sleep 15"
+  job2:
+    runs-on: ubuntu-latest
+    steps:
+      - run: "sleep 15"
+      - run: echo "总是执行"
+        if: always()
