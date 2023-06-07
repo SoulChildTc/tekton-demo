@@ -1,0 +1,8 @@
+name: GitHub Actions Demo
+run-name: ${{ github.actor }} 正在测试 GitHub Actions 🚀
+on: []
+jobs:
+  Explore-GitHub-Actions:
+    runs-on: ubuntu-latest
+    steps:
+      - run: "sleep 15"
