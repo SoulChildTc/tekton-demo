@@ -1,5 +1,5 @@
 name: GitHub Actions Demo
-run-name: ${{ github.actor }} 正在测试 GitHub Actions 🚀
+run-name: test cancle 🚀
 on: [push]
 jobs:
   job1:
