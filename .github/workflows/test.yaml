@@ -1,0 +1,13 @@
+name: GitHub Actions Demo
+run-name: test cancle 🚀
+on: [push]
+jobs:
+  job1:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Step 1
+      run: "aaa"
+
+    - name: Step 2
+      if: failure()
+      run: echo "Step 2 executed after Step 1 failed"
