@@ -15,4 +15,16 @@ jobs:
       - name: List files in the repository
         run: |
           ls ${{ github.workspace }}
+          mkdir cache
+          echo "test" > cache/test
       - run: echo "🍏 这个 Job 的状态 ${{ job.status }}."
+      
+      - name: Cache
+        uses: actions/cache@v1.2.1
+        with:
+          # A directory to store and save the cache
+          path: cache
+          # An explicit key for restoring and saving the cache
+          key: 1
+          # An ordered list of keys to use for restoring the cache if no cache hit occurred for key
+          restore-keys: "" # optional
