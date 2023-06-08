@@ -4,12 +4,9 @@ on: [push]
 jobs:
   job1:
     runs-on: self-hosted
-    container:
-      image: node:14.16
     steps:
     - name: Step 1
       run: |
         env
     - name: Step 2
-      if: failure()
-      run: echo "Step 2 executed after Step 1 failed"
+      run: docker images
