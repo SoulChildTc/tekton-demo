@@ -3,10 +3,11 @@ run-name: test cancle 🚀
 on: [push]
 jobs:
   job1:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     steps:
     - name: Step 1
-      run: "aaa"
+      run: |
+        env
 
     - name: Step 2
       if: failure()
