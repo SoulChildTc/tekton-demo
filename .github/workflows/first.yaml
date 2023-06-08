@@ -19,11 +19,14 @@ jobs:
           mkdir cache
           echo "test" > cache/test
       - run: echo "🍏 这个 Job 的状态 ${{ job.status }}."
-      - name: Run echo command on custom image
-        uses: docker://ruby:3.0
+      - name: Kaniko build
+        uses: aevea/action-kaniko@master
         with:
-          entrypoint: /bin/sh
-          args: -c "echo \"test\""
+          image: aevea/kaniko
+          username: ""
+          password: ""
+          cache: false
+          cache_registry: aevea/cache
       - name: Cache
         uses: actions/cache@v1.2.1
         with:
