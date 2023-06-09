@@ -8,5 +8,11 @@ jobs:
     steps:
       - run: echo "🎉 这个 Job 由 ${{ github.event_name }} 事件自动触发."
       - run: env
-      - run: echo "test file" > test.txt
-      - run: sleep 300
+      - run: |
+          mkdir output
+          echo "test file" > output/test.txt
+      - name: Archive file
+        uses: actions/upload-artifact@v3
+        with:
+          name: test
+          path: output/test.txt
