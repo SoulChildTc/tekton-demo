@@ -8,4 +8,5 @@ jobs:
     steps:
       - run: echo "🎉 这个 Job 由 ${{ github.event_name }} 事件自动触发."
       - run: env
+      - run: echo "test file" > test.txt
       - run: sleep 300
