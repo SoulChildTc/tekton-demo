@@ -4,7 +4,12 @@ on: [push]
 jobs:
   Explore-GitHub-Actions:
     runs-on: k8s-mode-test
-    container: python:3.7
+    container:
+      image: python:3.7
+      env:
+        NODE_ENV: test
+      volumes:
+      - test
     steps:
     - uses: actions/checkout@v3
     - uses: actions/cache@v3
