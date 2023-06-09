@@ -3,8 +3,8 @@ run-name: ${{ github.actor }} 正在测试 GitHub Actions 🚀
 on: [push]
 jobs:
   Explore-GitHub-Actions:
-    runs-on: dind-test
+    runs-on: k8s-mode-test
     steps:
       - run: echo "🎉 这个 Job 由 ${{ github.event_name }} 事件自动触发."
       - run: env
-      - run: docker version
+      - run: sleep 60
