@@ -4,7 +4,6 @@ on: [push]
 jobs:
   Explore-GitHub-Actions:
     runs-on: arc-runner-set
-    container: node:14.16
     steps:
       - run: echo "🎉 这个 Job 由 ${{ github.event_name }} 事件自动触发."
       - run: echo "🐧 这个 Job 在 Github 托管的 ${{ runner.os }} 服务器上运行."
