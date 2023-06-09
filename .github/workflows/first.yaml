@@ -6,15 +6,9 @@ jobs:
     runs-on: k8s-mode-test
     container: python:3.7
     steps:
-      - run: echo "🎉 这个 Job 由 ${{ github.event_name }} 事件自动触发."
-      - run: env
-      - run: |
-          ls /
-          mkdir output
-          echo "test file" > output/test.txt
-      - name: Archive file
-        uses: actions/upload-artifact@v3
-        with:
-          name: test
-          path: output/test.txt
-      - run: sleep 50
+    - uses: actions/checkout@v3
+    - uses: actions/setup-python@v4
+      with:
+        python-version: '3.7'
+        cache: 'pip' # caching pip dependencies
+    - run: pip install -r requirements.txt
