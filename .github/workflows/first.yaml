@@ -19,14 +19,8 @@ jobs:
           mkdir cache
           echo "test" > cache/test
       - run: echo "🍏 这个 Job 的状态 ${{ job.status }}."
-      - name: Kaniko build
-        uses: aevea/action-kaniko@master
-        with:
-          image: aevea/kaniko
-          username: ""
-          password: ""
-          cache: false
-          cache_registry: aevea/cache
+      - name: test group id
+        run: echo ${{ runner.labels['runner-group-id'] }}
       - name: Cache
         uses: actions/cache@v1.2.1
         with:
