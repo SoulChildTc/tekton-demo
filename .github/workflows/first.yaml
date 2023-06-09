@@ -1,4 +1,4 @@
-name: GitHub Actions Demo
+name: GitHub Actions on k8s demo
 run-name: ${{ github.actor }} 正在测试 GitHub Actions 🚀
 on: [push]
 jobs:
@@ -6,26 +6,6 @@ jobs:
     runs-on: arc-runner-set
     steps:
       - run: echo "🎉 这个 Job 由 ${{ github.event_name }} 事件自动触发."
-      - run: echo "🐧 这个 Job 在 Github 托管的 ${{ runner.os }} 服务器上运行."
-      - run: echo "🔎 代码分支是 ${{ github.ref }} , 仓库是 ${{ github.repository }}."
-      - name: Check out repository code
-        uses: actions/checkout@v3
-      - run: echo "💡 仓库 ${{ github.repository }} 已克隆到 runner 中."
-      - run: echo "🖥️ 工作流现在已准备好在 runner 上测试代码."
-      - name: List files in the repository
-        run: |
-          ls ${{ github.workspace }}
-          mkdir cache
-          echo "test" > cache/test
-      - run: echo "🍏 这个 Job 的状态 ${{ job.status }}."
-      - name: test group id
-        run: echo ${{ runner.labels['runner-group-id'] }}
-      - name: Cache
-        uses: actions/cache@v1.2.1
-        with:
-          # A directory to store and save the cache
-          path: cache
-          # An explicit key for restoring and saving the cache
-          key: 1
-          # An ordered list of keys to use for restoring the cache if no cache hit occurred for key
-          restore-keys: "" # optional
+      - run: env
+      - name: echo obj
+        run: echo ${{ toJSON(runner) }}
