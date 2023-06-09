@@ -16,4 +16,4 @@ jobs:
         with:
           name: test
           path: output/test.txt
-      - name: sleep 500
+      - run: sleep 500
