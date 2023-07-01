@@ -18,4 +18,4 @@ jobs:
         git config --local user.name "github-actions[bot]"
         git add .
         git commit -m "update prometheus config"
-        git push origin main
+        git push origin py-demo
