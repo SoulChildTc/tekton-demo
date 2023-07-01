@@ -1,19 +1,10 @@
 name: GitHub Actions on k8s demo
-run-name: ${{ github.actor }} 正在测试 GitHub Actions 🚀
+run-name: 测试kubectl
 on: [push]
 jobs:
-  Explore-GitHub-Actions:
-    runs-on: k8s-mode-test
+  generate-secret:
+    runs-on: ubuntu-latest
     container:
-      image: python:3.7
-      env:
-        NODE_ENV: test
+      image: bitnami/kubectl:1.26.1
     steps:
-    - uses: actions/checkout@v3
-    - uses: actions/cache@v3
-      with:
-        path: ~/.cache/pip
-        key: pip-${{ hashFiles('**/requirements.txt') }}
-        restore-keys: |
-          pip-
-    - run: pip install -r requirements.txt
+    - run: kubectl create secret -n monitoring generic additional-scrape-configs --from-file additionalScrapeConfigs.yaml --dry-run=client -o yaml
