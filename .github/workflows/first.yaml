@@ -5,14 +5,18 @@ on:
   #   paths:
   #   - 'additionalScrapeConfigs.yaml'
 jobs:
-  generate-secret:
+  build:
     runs-on: ubuntu-latest
     container:
       image: bitnami/kubectl:1.26.1
     steps:
     - uses: actions/checkout@v3
-    - run: |-
+    - name: generate-secret
+      run: |-
         kubectl create secret -n monitoring generic additional-scrape-configs --from-file additionalScrapeConfigs.yaml --dry-run=client -o yaml > additionalScrapeConfigs.secret.yaml 
         git add .
-        git commit -m "update config"
-        git push origin main
+        git commit -m "update prometheus config"
+    - name: Push changes
+      uses: ad-m/github-push-action@master
+      with:
+        branch: main
