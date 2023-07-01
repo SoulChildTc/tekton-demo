@@ -2,8 +2,8 @@ name: 测试
 run-name: 测试kubectl
 on:
   push:
-    paths:
-    - 'additionalScrapeConfigs.yaml'
+  #   paths:
+  #   - 'additionalScrapeConfigs.yaml'
 jobs:
   generate-secret:
     runs-on: ubuntu-latest
