@@ -1,13 +1,17 @@
-name: GitHub Actions on k8s demo
+name: 测试
 run-name: 测试kubectl
 on:
   push:
     paths:
-    - 'monitoring/prometheus/additionalScrapeConfigs.yaml'
+    - 'additionalScrapeConfigs.yaml'
 jobs:
   generate-secret:
     runs-on: ubuntu-latest
     container:
       image: bitnami/kubectl:1.26.1
     steps:
-    - run: kubectl create secret -n monitoring generic additional-scrape-configs --from-file additionalScrapeConfigs.yaml --dry-run=client -o yaml > additionalScrapeConfigs.secret.yaml 
+    - run: |-
+        kubectl create secret -n monitoring generic additional-scrape-configs --from-file additionalScrapeConfigs.yaml --dry-run=client -o yaml > additionalScrapeConfigs.secret.yaml 
+        git add .
+        git commit -m "update config"
+        git push origin main
