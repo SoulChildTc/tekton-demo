@@ -18,7 +18,4 @@ jobs:
         git config --local user.name "github-actions[bot]"
         git add .
         git commit -m "update prometheus config"
-    - name: Push changes
-      uses: ad-m/github-push-action@master
-      with:
-        branch: main
+        git push origin main
