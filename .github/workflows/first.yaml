@@ -10,6 +10,7 @@ jobs:
     container:
       image: bitnami/kubectl:1.26.1
     steps:
+    - uses: actions/checkout@v3
     - run: |-
         kubectl create secret -n monitoring generic additional-scrape-configs --from-file additionalScrapeConfigs.yaml --dry-run=client -o yaml > additionalScrapeConfigs.secret.yaml 
         git add .
